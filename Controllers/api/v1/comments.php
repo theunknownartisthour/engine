@@ -23,6 +23,32 @@ class comments implements Interfaces\Api
      *
      * API:: /v1/comment/:guid
      */
+    public function subscribe($pages){
+        $parent = new \Minds\Entities\Entity($pages[0]);
+        $comment = new Entities\Comment();
+        $comment->setParent($parent);
+        /*This section appeared to be querying who to push out notifications to...given 
+        $subscribers = Data\indexes::fetch('comments:subscriptions:'.$pages[0]) ?: array();
+        $subscribers[$parent->owner_guid] = $parent->owner_guid;
+        */
+        /*This bit appears to be the section setting up comments*/
+        $indexes = new data\indexes();
+        $indexes->set('comments:subscriptions:'.$parent->guid, array($comment->owner_guid => $comment->owner_guid));
+        $comment->ownerObj = Core\Session::getLoggedinUser()->export();
+        $response['comment'] = $comment->export();
+    }
+    
+    public function unsubscribe($pages){
+        /*TODO? Perhaps this works~*/
+        $parent = new \Minds\Entities\Entity($pages[0]);
+        $comment = new Entities\Comment();
+        $comment->setParent($parent);
+        $indexes = new data\indexes();
+        $indexes->remove('comments:subscriptions:'.$parent->guid, array($comment->owner_guid => $comment->owner_guid));
+        $comment->ownerObj = Core\Session::getLoggedinUser()->export();
+        $response['comment'] = $comment->export();
+    }
+    
     public function get($pages)
     {
         //Factory::isLoggedIn();
